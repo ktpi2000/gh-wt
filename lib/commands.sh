@@ -183,6 +183,46 @@ select_worktree() {
     echo "$selected" | awk '{print $1}'
 }
 
+cmd_clean_merged() {
+    check_git_repo
+    
+    echo "Finding merged branches..."
+    
+    local main_branch
+    main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' 2>/dev/null || echo "main")
+    
+    local merged_branches
+    merged_branches=$(git branch --merged "$main_branch" | grep -v "^\*" | grep -v "^\s*$main_branch$" | grep -v "^\s*master$" | sed 's/^\s*//')
+    
+    if [ -z "$merged_branches" ]; then
+        echo "No merged branches found to clean up"
+        exit 0
+    fi
+    
+    echo "The following branches are merged into $main_branch:"
+    echo "$merged_branches" | sed 's/^/  /'
+    echo
+    
+    read -p "Do you want to delete these branches? [y/N]: " confirm
+    case "$confirm" in
+        [yY]|[yY][eE][sS])
+            echo "Deleting merged branches..."
+            echo "$merged_branches" | while IFS= read -r branch; do
+                if [ -n "$branch" ]; then
+                    echo "  Deleting branch: $branch"
+                    git branch -d "$branch" 2>/dev/null || {
+                        echo "    Warning: Could not delete branch '$branch'"
+                    }
+                fi
+            done
+            echo "Branch cleanup completed!"
+            ;;
+        *)
+            echo "Branch cleanup cancelled"
+            ;;
+    esac
+}
+
 cmd_exec_with_selection() {
     local command_args=("$@")
     

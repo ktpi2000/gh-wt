@@ -34,6 +34,7 @@ COMMANDS:
     add <branch> [path]     Create a new worktree for a branch
     pr <number> [path]      Create worktree from PR number
     remove                  Remove a worktree interactively
+    clean-merged            Find and delete merged branches interactively
     -- <command>            Execute command in selected worktree
     <command>               Execute command in selected worktree (interactive)
     help                    Show this help message
@@ -44,6 +45,7 @@ EXAMPLES:
     gh wt add new-branch ../my-feature
     gh wt pr 123
     gh wt remove
+    gh wt clean-merged
     gh wt code              # Select worktree and open in VS Code
     gh wt git status        # Select worktree and run git status
     gh wt -- git status     # Same as above
@@ -55,5 +57,6 @@ EXAMPLES:
 - `add <branch> [path]` - Create worktree  
 - `pr <number> [path]` - Create from PR
 - `remove` - Remove worktree (interactive)
+- `clean-merged` - Find and delete merged branches (interactive)
 - `<command>` - Execute in selected worktree
 
