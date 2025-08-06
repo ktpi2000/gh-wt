@@ -33,7 +33,13 @@ cmd_add() {
     fi
     
     if [ -z "$path" ]; then
-        path="../$(basename "$(get_repo_root)")-$branch_name"
+        local repo_root
+        repo_root="$(get_repo_root)"
+        local worktree_dir="$repo_root/.worktree"
+        if [ ! -d "$worktree_dir" ]; then
+            mkdir -p "$worktree_dir"
+        fi
+        path="$worktree_dir/$branch_name"
     fi
     
     if [ -d "$path" ]; then
@@ -77,7 +83,13 @@ cmd_pr() {
     branch_name=$(echo "$pr_info" | jq -r '.headRefName')
     
     if [ -z "$path" ]; then
-        path="../$(basename "$(get_repo_root)")-pr-$pr_number"
+        local repo_root
+        repo_root="$(get_repo_root)"
+        local worktree_dir="$repo_root/.worktree"
+        if [ ! -d "$worktree_dir" ]; then
+            mkdir -p "$worktree_dir"
+        fi
+        path="$worktree_dir/pr-$pr_number"
     fi
     
     if git worktree list | grep -q "$path"; then
