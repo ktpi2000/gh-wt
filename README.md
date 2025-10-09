@@ -33,7 +33,8 @@ COMMANDS:
     list                    List worktrees in current repository
     add <branch> [path]     Create a new worktree for a branch
     pr <number> [path]      Create worktree from PR number
-    remove                  Remove a worktree interactively
+    remove [--force|-f]     Remove a worktree interactively
+                            --force: Force removal even with uncommitted changes
     -- <command>            Execute command in selected worktree
     <command>               Execute command in selected worktree (interactive)
     help                    Show this help message
@@ -44,6 +45,7 @@ EXAMPLES:
     gh wt add new-branch ../my-feature
     gh wt pr 123
     gh wt remove
+    gh wt remove --force    # Force remove worktree with uncommitted changes
     gh wt code              # Select worktree and open in VS Code
     gh wt git status        # Select worktree and run git status
     gh wt -- git status     # Same as above
@@ -52,8 +54,9 @@ EXAMPLES:
 ## Commands
 
 - `list` - List worktrees
-- `add <branch> [path]` - Create worktree  
+- `add <branch> [path]` - Create worktree
 - `pr <number> [path]` - Create from PR
-- `remove` - Remove worktree (interactive)
+- `remove [--force|-f]` - Remove worktree (interactive)
+  - `--force` or `-f` - Force removal even with uncommitted changes
 - `<command>` - Execute in selected worktree
 

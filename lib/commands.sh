@@ -100,29 +100,55 @@ cmd_pr() {
 
 cmd_remove() {
     check_git_repo
-    
+
+    local force=false
+
+    # Parse options
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --force|-f)
+                force=true
+                shift
+                ;;
+            *)
+                echo "Error: Unknown option '$1'" >&2
+                echo "Usage: gh wt remove [--force|-f]" >&2
+                exit 1
+                ;;
+        esac
+    done
+
     local worktrees
     worktrees=$(git worktree list --porcelain | awk '/^worktree/ {path=$2} /^branch/ {branch=$2; gsub(/^refs\/heads\//, "", branch)} /^$/ {if (path != "'$(get_repo_root)'") print path " [" branch "]"}')
-    
+
     if [ -z "$worktrees" ]; then
         echo "No additional worktrees found to remove"
         exit 0
     fi
-    
+
     local selected
     selected=$(echo "$worktrees" | fzf --prompt="Select worktree to remove: " --height=10 --reverse)
-    
+
     if [ -z "$selected" ]; then
         echo "No worktree selected"
         exit 0
     fi
-    
+
     local path
     path=$(echo "$selected" | awk '{print $1}')
-    
+
     echo "Removing worktree at '$path'..."
-    git worktree remove "$path"
-    echo "Worktree removed successfully!"
+    if [ "$force" = true ]; then
+        git worktree remove --force "$path"
+        echo "Worktree removed successfully!"
+    else
+        if ! git worktree remove "$path" 2>&1; then
+            echo ""
+            echo "Hint: Use 'gh wt remove --force' to remove worktree with uncommitted changes" >&2
+            exit 1
+        fi
+        echo "Worktree removed successfully!"
+    fi
 }
 
 cmd_exec() {
