@@ -137,6 +137,9 @@ cmd_remove() {
     local path
     path=$(echo "$selected" | awk '{print $1}')
 
+    local branch_name
+    branch_name=$(echo "$selected" | sed 's/.*\[\(.*\)\]/\1/')
+
     echo "Removing worktree at '$path'..."
     if [ "$force" = true ]; then
         git worktree remove --force "$path"
@@ -148,6 +151,18 @@ cmd_remove() {
             exit 1
         fi
         echo "Worktree removed successfully!"
+    fi
+
+    # Ask to delete the branch as well
+    if [ -n "$branch_name" ]; then
+        read -p "Delete branch '$branch_name' as well? [y/N]: " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            if [ "$force" = true ]; then
+                git branch -D "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Could not delete branch '$branch_name'."
+            else
+                git branch -d "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Branch '$branch_name' is not fully merged. Use --force to delete anyway."
+            fi
+        fi
     fi
 }
 

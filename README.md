@@ -34,6 +34,7 @@ COMMANDS:
     add <branch> [path]     Create a new worktree for a branch
     pr <number> [path]      Create worktree from PR number
     remove [--force|-f]     Remove a worktree interactively
+                            After removal, prompts to delete the branch as well
                             --force: Force removal even with uncommitted changes
     -- <command>            Execute command in selected worktree
     <command>               Execute command in selected worktree (interactive)
@@ -57,6 +58,7 @@ EXAMPLES:
 - `add <branch> [path]` - Create worktree
 - `pr <number> [path]` - Create from PR
 - `remove [--force|-f]` - Remove worktree (interactive)
-  - `--force` or `-f` - Force removal even with uncommitted changes
+  - After removal, prompts to delete the associated branch
+  - `--force` or `-f` - Force removal even with uncommitted changes (also force-deletes unmerged branches)
 - `<command>` - Execute in selected worktree
 
