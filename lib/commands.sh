@@ -140,8 +140,9 @@ cmd_remove() {
         echo "  - $item"
     done
     echo ""
-    read -p "Proceed with removal? [y/N]: " proceed < /dev/tty
-    if [[ ! "$proceed" =~ ^[Yy]$ ]]; then
+    local proceed
+    proceed=$(printf "No\nYes" | fzf --prompt="Proceed with removal? " --height=4 --reverse --no-multi)
+    if [ "$proceed" != "Yes" ]; then
         echo "Aborted."
         exit 0
     fi
