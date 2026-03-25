@@ -102,7 +102,6 @@ cmd_remove() {
     check_git_repo
 
     local force=false
-
     # Parse options
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -152,8 +151,6 @@ cmd_remove() {
     while IFS= read -r item; do
         local path branch_name
         path=$(echo "$item" | awk '{print $1}')
-        branch_name=$(echo "$item" | sed 's/.*\[\(.*\)\]/\1/')
-
         echo ""
         echo "Removing worktree at '$path'..."
         if [ "$force" = true ]; then
@@ -174,17 +171,6 @@ cmd_remove() {
             echo "Worktree removed successfully!"
         fi
 
-        # Ask to delete the branch as well
-        if [ -n "$branch_name" ]; then
-            read -p "Delete branch '$branch_name' as well? [y/N]: " confirm < /dev/tty
-            if [[ "$confirm" =~ ^[Yy]$ ]]; then
-                if [ "$force" = true ]; then
-                    git branch -D "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Could not delete branch '$branch_name'."
-                else
-                    git branch -d "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Branch '$branch_name' is not fully merged. Use --force to delete anyway."
-                fi
-            fi
-        fi
     done <<< "$selected"
 
     if [ "$had_error" = true ]; then
