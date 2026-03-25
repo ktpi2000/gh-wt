@@ -18,7 +18,7 @@ COMMANDS:
     list                    List worktrees in current repository
     add <branch> [path]     Create a new worktree for a branch
     pr <number> [path]      Create worktree from PR number
-    remove [--force|-f]     Remove a worktree interactively
+    remove [--force|-f]     Remove worktree(s) interactively (Tab for multi-select)
                             --force: Force removal even with uncommitted changes
     -- <command>            Execute command in selected worktree
     <command>               Execute command in selected worktree (interactive)

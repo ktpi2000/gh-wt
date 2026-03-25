@@ -127,42 +127,68 @@ cmd_remove() {
     fi
 
     local selected
-    selected=$(echo "$worktrees" | fzf --prompt="Select worktree to remove: " --height=10 --reverse)
+    selected=$(echo "$worktrees" | fzf --multi --prompt="Select worktree(s) to remove (Tab to select): " --height=10 --reverse)
 
     if [ -z "$selected" ]; then
         echo "No worktree selected"
         exit 0
     fi
 
-    local path
-    path=$(echo "$selected" | awk '{print $1}')
-
-    local branch_name
-    branch_name=$(echo "$selected" | sed 's/.*\[\(.*\)\]/\1/')
-
-    echo "Removing worktree at '$path'..."
-    if [ "$force" = true ]; then
-        git worktree remove --force "$path"
-        echo "Worktree removed successfully!"
-    else
-        if ! git worktree remove "$path" 2>&1; then
-            echo ""
-            echo "Hint: Use 'gh wt remove --force' to remove worktree with uncommitted changes" >&2
-            exit 1
-        fi
-        echo "Worktree removed successfully!"
+    local count
+    count=$(echo "$selected" | wc -l | tr -d ' ')
+    echo "Selected $count worktree(s) to remove:"
+    echo "$selected" | while IFS= read -r item; do
+        echo "  - $item"
+    done
+    echo ""
+    read -p "Proceed with removal? [y/N]: " proceed < /dev/tty
+    if [[ ! "$proceed" =~ ^[Yy]$ ]]; then
+        echo "Aborted."
+        exit 0
     fi
 
-    # Ask to delete the branch as well
-    if [ -n "$branch_name" ]; then
-        read -p "Delete branch '$branch_name' as well? [y/N]: " confirm
-        if [[ "$confirm" =~ ^[Yy]$ ]]; then
-            if [ "$force" = true ]; then
-                git branch -D "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Could not delete branch '$branch_name'."
+    local had_error=false
+
+    while IFS= read -r item; do
+        local path branch_name
+        path=$(echo "$item" | awk '{print $1}')
+        branch_name=$(echo "$item" | sed 's/.*\[\(.*\)\]/\1/')
+
+        echo ""
+        echo "Removing worktree at '$path'..."
+        if [ "$force" = true ]; then
+            if git worktree remove --force "$path"; then
+                echo "Worktree removed successfully!"
             else
-                git branch -d "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Branch '$branch_name' is not fully merged. Use --force to delete anyway."
+                echo "Error: Failed to remove worktree at '$path'" >&2
+                had_error=true
+                continue
+            fi
+        else
+            if ! git worktree remove "$path" 2>&1; then
+                echo "Error: Failed to remove worktree at '$path'" >&2
+                echo "Hint: Use 'gh wt remove --force' to remove worktrees with uncommitted changes" >&2
+                had_error=true
+                continue
+            fi
+            echo "Worktree removed successfully!"
+        fi
+
+        # Ask to delete the branch as well
+        if [ -n "$branch_name" ]; then
+            read -p "Delete branch '$branch_name' as well? [y/N]: " confirm < /dev/tty
+            if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                if [ "$force" = true ]; then
+                    git branch -D "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Could not delete branch '$branch_name'."
+                else
+                    git branch -d "$branch_name" 2>/dev/null && echo "Branch '$branch_name' deleted." || echo "Branch '$branch_name' is not fully merged. Use --force to delete anyway."
+                fi
             fi
         fi
+    done <<< "$selected"
+
+    if [ "$had_error" = true ]; then
+        exit 1
     fi
 }
 
