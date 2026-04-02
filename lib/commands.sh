@@ -23,17 +23,20 @@ cmd_list() {
 cmd_add() {
     local branch_name="$1"
     local path="$2"
-    
+
     check_git_repo
-    
+
     if [ -z "$branch_name" ]; then
         echo "Error: Branch name is required" >&2
         echo "Usage: gh wt add <branch-name> [path]" >&2
         exit 1
     fi
-    
+
+    # Sanitize branch name by replacing / with _
+    local safe_branch_name="${branch_name//\//_}"
+
     if [ -z "$path" ]; then
-        path="../$(basename "$(get_repo_root)")-$branch_name"
+        path="../$(basename "$(get_repo_root)")-$safe_branch_name"
     fi
     
     if [ -d "$path" ]; then
