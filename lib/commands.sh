@@ -49,6 +49,7 @@ cmd_add() {
     
     echo "Creating worktree at '$path' for branch '$branch_name'..."
     git worktree add "$path" "$branch_name"
+    create_linkfiles "$(cd "$path" && pwd)"
     echo "Worktree created successfully!"
 }
 
@@ -95,6 +96,7 @@ cmd_pr() {
     
     echo "Creating worktree at '$path' for PR #$pr_number (branch: $branch_name)..."
     git worktree add "$path" "$branch_name"
+    create_linkfiles "$(cd "$path" && pwd)"
     echo "Worktree created successfully!"
 }
 

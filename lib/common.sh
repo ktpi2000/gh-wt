@@ -42,3 +42,36 @@ get_repo_root() {
 get_current_branch() {
     git branch --show-current
 }
+
+create_linkfiles() {
+    local worktree_path="$1"
+    local repo_root
+    repo_root=$(get_repo_root)
+
+    local config_file="$repo_root/.gh-wt-linkfiles"
+    [ -f "$config_file" ] || return 0
+
+    local linked=0
+    while IFS= read -r line || [ -n "$line" ]; do
+        line=$(echo "$line" | sed 's/#.*//' | xargs)
+        [ -z "$line" ] && continue
+
+        local source="$repo_root/$line"
+        local target="$worktree_path/$line"
+
+        if [ ! -e "$source" ]; then
+            echo "  Warning: '$line' not found in main worktree, skipping" >&2
+            continue
+        fi
+        if [ -e "$target" ] || [ -L "$target" ]; then
+            continue
+        fi
+
+        mkdir -p "$(dirname "$target")"
+        ln -s "$source" "$target"
+        echo "  Linked: $line"
+        linked=$((linked + 1))
+    done < "$config_file"
+
+    [ $linked -gt 0 ] && echo "Created $linked symlink(s)."
+}

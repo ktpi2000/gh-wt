@@ -35,6 +35,15 @@ EXAMPLES:
     gh wt git status        # Select worktree and run git status
     gh wt -- git status     # Same as above
 
+CONFIGURATION:
+    Create .gh-wt-linkfiles in repo root to symlink files into new worktrees:
+        # .gh-wt-linkfiles
+        .env
+        .env.local
+        front/.env
+
+    To hide from all repos: echo ".gh-wt-linkfiles" >> ~/.config/git/ignore
+
 EOF
 }
 
